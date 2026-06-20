@@ -1,20 +1,20 @@
 ﻿@model List<FoodItem>
 @{
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = "Домашняя";
 }
 
 <!-- Hero Section -->
 <div class="hero-section text-center">
     <div class="container">
-        <h1 class="display-3 mb-4">Delicious Food Delivered To Your Door</h1>
-        <p class="lead mb-4">Order your favorite meals online and enjoy quick delivery</p>
-        <a href="#" class="btn btn-light btn-lg">Order Now <i class="bi bi-arrow-right"></i></a>
+        <h1 class="display-3 mb-4">Вкусная Еда С Доставкой К Вашей Двери</h1>
+        <p class="lead mb-4">Закажите свои любимые блюда онлайн и наслаждайтесь быстрой доставкой</p>
+        <a href="/Menu" class="btn btn-light btn-lg">Заказывайте прямо сейчас <i class="bi bi-arrow-right"></i></a>
     </div>
 </div>
 
 <!-- Featured Items Section -->
 <div class="container my-5">
-    <h2 class="text-center mb-4">Featured Items</h2>
+    <h2 class="text-center mb-4">Рекомендуемые товары</h2>
     <div class="row">
         @foreach (var item in Model)
         {
@@ -27,7 +27,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="h5 mb-0 text-primary">$@item.Price</span>
                             <a href="#" class="btn btn-primary">
-                                <i class="bi bi-cart-plus"></i> Add to Cart
+                                <i class="bi bi-cart-plus"></i> Добавить в корзину
                             </a>
                         </div>
                     </div>
