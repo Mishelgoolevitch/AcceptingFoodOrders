@@ -52,9 +52,38 @@
                             <span class="badge bg-danger cart-badge" id="cartCount">0</span>
                         </a>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="#">Логин</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/Account/Register">Регистрация</a></li>
-                </ul>
+                    @if (Context.Session.GetString("Username") != null)
+{
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+            <i class="bi bi-person-circle"></i> @Context.Session.GetString("Username")
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+                <a class="dropdown-item" href="#">
+                    <i class="bi bi-person"></i> My Profile
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="#">
+                    <i class="bi bi-bag-check"></i> My Orders
+                </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <a class="dropdown-item text-danger" href="#">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </li>
+}
+else
+{
+    <li class="nav-item"><a class="nav-link" href="/Account/Login">Логин</a></li>
+    <li class="nav-item"><a class="nav-link" href="/Account/Register">Регистрация</a></li>
+}
+       </ul>
             </div>
         </div>
     </nav>

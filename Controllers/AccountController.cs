@@ -49,5 +49,24 @@ namespace AcceptingFoodOrders.Controllers
         {
             return View();
         }
+
+        [HttpPost]
+        public IActionResult Login(LoginViewModel model)
+        {
+            var user = _context.Users.FirstOrDefault(u =>
+                u.Username == model.Username && u.Password == model.Password);
+
+            if (user != null)
+            {
+                HttpContext.Session.SetInt32("UserId", user.Id);
+                HttpContext.Session.SetString("Username", user.Username);
+                HttpContext.Session.SetString("IsAdmin", user.IsAdmin.ToString());
+
+                return RedirectToAction("Index", "Home");
+            }
+
+            ModelState.AddModelError("", "Неверное имя пользователя или пароль");
+            return View(model);
+        }
     }
 }
