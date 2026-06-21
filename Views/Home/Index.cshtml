@@ -26,8 +26,8 @@
                         <p class="card-text text-muted">@item.Description</p>
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="h5 mb-0 text-primary">$@item.Price</span>
-                            <a href="#" class="btn btn-primary">
-                                <i class="bi bi-cart-plus"></i> Добавить в корзину
+                            <a href="/Order/AddToCart?foodItemId=@item.Id" class="btn btn-primary">
+                                <i class="bi bi-cart-plus"></i> Add to Cart
                             </a>
                         </div>
                     </div>

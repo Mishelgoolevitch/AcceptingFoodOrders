@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace AcceptingFoodOrders.Controllers
 {
-    public class OderController : Controller
+    public class OrderController : Controller
     {
         private readonly ApplicationDbContext _context;
 
