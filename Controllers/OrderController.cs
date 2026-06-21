@@ -49,6 +49,13 @@ namespace AcceptingFoodOrders.Controllers
         {
             HttpContext.Session.SetString("Cart", JsonConvert.SerializeObject(cart));
         }
+
+        public IActionResult Cart()
+        {
+            var cart = GetCart();
+            ViewBag.Total = cart.Sum(c => c.Price * c.Quantity);
+            return View(cart);
+        }
     }
     public class CartItem
     {
