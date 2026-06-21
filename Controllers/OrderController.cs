@@ -36,7 +36,7 @@ namespace AcceptingFoodOrders.Controllers
             }
 
             SaveCart(cart);
-            return RedirectToAction("#");
+            return RedirectToAction("Cart");
         }
         private List<CartItem> GetCart()
         {
@@ -50,11 +50,40 @@ namespace AcceptingFoodOrders.Controllers
             HttpContext.Session.SetString("Cart", JsonConvert.SerializeObject(cart));
         }
 
+        public IActionResult RemoveFromCart(int foodItemId)
+        {
+            var cart = GetCart();
+            var item = cart.FirstOrDefault(c => c.FoodItemId == foodItemId);
+
+            if (item != null)
+            {
+                cart.Remove(item);
+                SaveCart(cart);
+            }
+
+            return RedirectToAction("Cart");
+        }
+
         public IActionResult Cart()
         {
             var cart = GetCart();
             ViewBag.Total = cart.Sum(c => c.Price * c.Quantity);
             return View(cart);
+        }
+
+        [HttpPost]
+        public IActionResult UpdateQuantity(int foodItemId, int quantity)
+        {
+            var cart = GetCart();
+            var item = cart.FirstOrDefault(c => c.FoodItemId == foodItemId);
+
+            if (item != null && quantity > 0)
+            {
+                item.Quantity = quantity;
+                SaveCart(cart);
+            }
+
+            return RedirectToAction("Cart");
         }
     }
     public class CartItem
