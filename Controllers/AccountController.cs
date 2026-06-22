@@ -68,5 +68,59 @@ namespace AcceptingFoodOrders.Controllers
             ModelState.AddModelError("", "Неверное имя пользователя или пароль");
             return View(model);
         }
+
+        [HttpGet]
+        public IActionResult Profile()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login");
+
+            var user = _context.Users.Find(userId);
+            if (user == null) return NotFound();
+
+            var model = new ProfileViewModel
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                FullName = user.FullName,
+                Address = user.Address,
+                Phone = user.Phone
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public IActionResult Profile(ProfileViewModel model)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login");
+
+            if (ModelState.IsValid)
+            {
+                var user = _context.Users.Find(userId);
+                if (user == null) return NotFound();
+
+                // Check if email is already taken by another user
+                var emailExists = _context.Users.Any(u => u.Email == model.Email && u.Id != userId);
+                if (emailExists)
+                {
+                    ModelState.AddModelError("Email", "Email is already registered to another account.");
+                    return View(model);
+                }
+
+                user.FullName = model.FullName;
+                user.Email = model.Email;
+                user.Phone = model.Phone;
+                user.Address = model.Address;
+
+                _context.SaveChanges();
+                TempData["Success"] = "Profile updated successfully!";
+                return RedirectToAction("Profile");
+            }
+
+            return View(model);
+        }
     }
 }
