@@ -38,7 +38,7 @@ namespace AcceptingFoodOrders.Controllers
                 _context.Users.Add(user);
                 _context.SaveChanges();
 
-                return RedirectToAction("Menu");
+                return RedirectToAction("Login");
             }
 
             return View(model);
@@ -102,7 +102,6 @@ namespace AcceptingFoodOrders.Controllers
                 var user = _context.Users.Find(userId);
                 if (user == null) return NotFound();
 
-                // Check if email is already taken by another user
                 var emailExists = _context.Users.Any(u => u.Email == model.Email && u.Id != userId);
                 if (emailExists)
                 {
@@ -121,6 +120,38 @@ namespace AcceptingFoodOrders.Controllers
             }
 
             return View(model);
+        }
+
+        [HttpPost]
+        public IActionResult DeleteAccount()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login");
+
+            var user = _context.Users.Find(userId);
+            if (user == null) return NotFound();
+
+            // Необязательно: Проверьте, есть ли у пользователя отложенные ордера
+            var pendingOrders = _context.Orders.Any(o => o.UserId == userId &&
+                (o.Status == "Pending" || o.Status == "Confirmed" || o.Status == "Preparing"));
+
+            if (pendingOrders)
+            {
+                TempData["Error"] = "Невозможно удалить учетную запись, пока у вас есть активные заказы!";
+                return RedirectToAction("Profile");
+            }
+
+            _context.Users.Remove(user);
+            _context.SaveChanges();
+
+            HttpContext.Session.Clear();
+            TempData["Success"] = "Ваша учетная запись была удалена.";
+            return RedirectToAction("Index", "Home");
+        }
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Index","Home");
         }
     }
 }
