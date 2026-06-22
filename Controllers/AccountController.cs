@@ -153,5 +153,36 @@ namespace AcceptingFoodOrders.Controllers
             HttpContext.Session.Clear();
             return RedirectToAction("Index","Home");
         }
+
+        [HttpGet]
+        public IActionResult ChangePassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult ChangePassword(ChangePasswordViewModel model)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login");
+
+            if (ModelState.IsValid)
+            {
+                var user = _context.Users.Find(userId);
+                if (user.Password != model.CurrentPassword) 
+                {
+                    ModelState.AddModelError("Текущий пароль", "Текущий пароль неверен.");
+                    return View(model);
+                }
+
+                user.Password = model.NewPassword; 
+                _context.SaveChanges();
+
+                TempData["Success"] = "Пароль успешно изменен!";
+                return RedirectToAction("Profile");
+            }
+
+            return View(model);
+        }
     }
 }
