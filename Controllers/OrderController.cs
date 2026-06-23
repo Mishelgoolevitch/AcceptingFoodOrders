@@ -85,6 +85,52 @@ namespace AcceptingFoodOrders.Controllers
 
             return RedirectToAction("Cart");
         }
+
+        [HttpGet]
+        public IActionResult Checkout()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login", "Account");
+
+            var cart = GetCart();
+            if (!cart.Any()) return RedirectToAction("Index", "Menu");
+
+            ViewBag.Total = cart.Sum(c => c.Price * c.Quantity);
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Checkout(string deliveryAddress, string phoneNumber)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var cart = GetCart();
+
+            var order = new Order
+            {
+                UserId = userId.Value,
+                DeliveryAddress = deliveryAddress,
+                PhoneNumber = phoneNumber,
+                TotalAmount = cart.Sum(c => c.Price * c.Quantity),
+                OrderItems = cart.Select(c => new OrderItem
+                {
+                    FoodItemId = c.FoodItemId,
+                    Quantity = c.Quantity,
+                    UnitPrice = c.Price
+                }).ToList()
+            };
+
+            _context.Orders.Add(order);
+            _context.SaveChanges();
+
+            HttpContext.Session.Remove("Cart");
+            return RedirectToAction("OrderConfirmation", new { orderId = order.Id });
+        }
+
+        public IActionResult OrderConfirmation(int orderId)
+        {
+            ViewBag.OrderId = orderId;
+            return View();
+        }
     }
     public class CartItem
     {

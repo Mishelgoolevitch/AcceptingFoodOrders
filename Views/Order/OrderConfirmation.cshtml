@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "Заказ Подтвержден";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="card shadow-lg border-success">
+                <div class="card-body py-5">
+                    <i class="bi bi-check-circle-fill text-success display-1 mb-3"></i>
+                    <h2 class="text-success mb-3">Заказ Успешно Размещен!</h2>
+                    <p class="lead">Благодарим Вас За Ваш Заказ.</p>
+                    <p class="text-muted">Ваш Заказ ID: <strong>#@ViewBag.OrderId</strong></p>
+                    <hr />
+                    <p>Мы доставим вам еду в ближайшее время. Вы можете отслеживать статус своего заказа в личном кабинете.</p>
+                    <div class="mt-4">
+                        <a href="/" class="btn btn-primary me-2">Продолжайте Покупки</a>
+                        <a href="/Menu" class="btn btn-outline-primary">Обзор Меню</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
