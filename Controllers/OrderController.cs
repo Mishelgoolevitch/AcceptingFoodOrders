@@ -1,5 +1,6 @@
 ﻿using AcceptingFoodOrders.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace AcceptingFoodOrders.Controllers
@@ -130,6 +131,20 @@ namespace AcceptingFoodOrders.Controllers
         {
             ViewBag.OrderId = orderId;
             return View();
+        }
+
+        public IActionResult MyOrders()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login", "Account");
+
+            var orders = _context.Orders
+                .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.FoodItem)
+                .Where(o => o.UserId == userId)
+                .AsQueryable();
+
+            return View(orders.ToList());
         }
     }
     public class CartItem
