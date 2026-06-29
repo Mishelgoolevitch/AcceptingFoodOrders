@@ -133,7 +133,7 @@ namespace AcceptingFoodOrders.Controllers
             return View();
         }
 
-        public IActionResult MyOrders()
+        public IActionResult MyOrders(string status, string sortOrder, DateTime? fromDate, DateTime? toDate)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Login", "Account");
@@ -144,8 +144,39 @@ namespace AcceptingFoodOrders.Controllers
                 .Where(o => o.UserId == userId)
                 .AsQueryable();
 
+            if (!string.IsNullOrEmpty(status) && status != "All")
+            {
+                orders = orders.Where(o => o.Status == status);
+                ViewBag.CurrentStatus = status;
+            }
+
+            if (fromDate.HasValue)
+            {
+                orders = orders.Where(o => o.OrderDate >= fromDate.Value);
+                ViewBag.FromDate = fromDate.Value.ToString("yyyy-MM-dd");
+            }
+            if (toDate.HasValue)
+            {
+                orders = orders.Where(o => o.OrderDate <= toDate.Value.AddDays(1));
+                ViewBag.ToDate = toDate.Value.ToString("yyyy-MM-dd");
+            }
+
+            ViewBag.CurrentSort = sortOrder;
+            orders = sortOrder switch
+            {
+                "date_asc" => orders.OrderBy(o => o.OrderDate),
+                "total_desc" => orders.OrderByDescending(o => o.TotalAmount),
+                "total_asc" => orders.OrderBy(o => o.TotalAmount),
+                _ => orders.OrderByDescending(o => o.OrderDate)
+            };
+
+            ViewBag.StatusList = new List<string> { "All", "Pending", "Confirmed", "Preparing", "OutForDelivery", "Delivered", "Cancelled" };
+
+
             return View(orders.ToList());
         }
+
+
     }
     public class CartItem
     {
