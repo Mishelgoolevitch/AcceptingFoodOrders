@@ -176,6 +176,21 @@ namespace AcceptingFoodOrders.Controllers
             return View(orders.ToList());
         }
 
+        public IActionResult TrackOrder(int id)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login", "Account");
+
+            var order = _context.Orders
+                .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.FoodItem)
+                .FirstOrDefault(o => o.Id == id && o.UserId == userId);
+
+            if (order == null) return NotFound();
+
+            return View(order);
+        }
+
 
     }
     public class CartItem

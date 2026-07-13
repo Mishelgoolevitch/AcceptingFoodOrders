@@ -34,8 +34,8 @@
                 <div class="col-md-3">
                     <label class="form-label">Сортировать По</label>
                     <select name="sortOrder" class="form-select">
-                        <option value="">Самый Новый Первый</option>
-                        <option value="date_asc" selected="@(ViewBag.CurrentSort == "date_asc")">Самый Старый Первый</option>
+                        <option value="">Самый Новый</option>
+                        <option value="date_asc" selected="@(ViewBag.CurrentSort == "date_asc")">Самый Старый</option>
                         <option value="total_desc" selected="@(ViewBag.CurrentSort == "total_desc")">Самая Высокая Сумма</option>
                         <option value="total_asc" selected="@(ViewBag.CurrentSort == "total_asc")">Самая Низкая Сумма</option>
                     </select>
@@ -118,6 +118,13 @@
                                         </li>
                                     }
                                 </ul>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <a href="/Order/TrackOrder/@order.Id" class="btn btn-outline-primary">
+                                        <i class="bi bi-geo-alt"></i> Статус заказа
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
