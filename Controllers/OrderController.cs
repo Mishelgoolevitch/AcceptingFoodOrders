@@ -170,7 +170,7 @@ namespace AcceptingFoodOrders.Controllers
                 _ => orders.OrderByDescending(o => o.OrderDate)
             };
 
-            ViewBag.StatusList = new List<string> { "All", "Pending", "Confirmed", "Preparing", "OutForDelivery", "Delivered", "Cancelled" };
+            ViewBag.StatusList = new List<string> { "Все", "Ожидаемый", "Подтвержденный", "Подготовка", "Срочная доставка", "Доставлен", "Отмененный" };
 
 
             return View(orders.ToList());
@@ -191,6 +191,29 @@ namespace AcceptingFoodOrders.Controllers
             return View(order);
         }
 
+        [HttpPost]
+        public IActionResult CancelMyOrder(int orderId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login", "Account");
+
+            var order = _context.Orders.FirstOrDefault(o => o.Id == orderId && o.UserId == userId);
+
+            if (order == null) return NotFound();
+
+            // Разрешать отмену только в том случае, если статус находится на рассмотрении или подтвержден
+            if (order.Status != "Ожидаемый" && order.Status != "Подтвержденный")
+            {
+                TempData["Error"] = "Заказ не может быть отменен на данном этапе!";
+                return RedirectToAction("TrackOrder", new { id = orderId });
+            }
+
+            order.Status = "Подтвержденный";
+            _context.SaveChanges();
+
+            TempData["Success"] = "Заказ успешно отменен!";
+            return RedirectToAction("MyOrders");
+        }
 
     }
     public class CartItem
