@@ -99,5 +99,24 @@ namespace AcceptingFoodOrders.Controllers
 
             return View(items.ToList());
         }
+
+        [HttpPost]
+        public IActionResult ToggleAvailability(int id)
+        {
+            // Проверка безопасности: Только администраторы могут переключать доступность
+            if (!IsAdmin()) return RedirectToAction("Index", "Home");
+
+            var item = _context.FoodItems.Find(id);
+            if (item == null) return NotFound();
+
+            // Логика изменения статуса доступности
+            item.IsAvailable = !item.IsAvailable;
+            _context.SaveChanges();
+
+            // Установить уведомление для пользователя
+            TempData["Success"] = $"{item.Name} is now {(item.IsAvailable ? "доступно" : "недоступно")}";
+
+            return RedirectToAction("ManageMenu");
+        }
     }
 }
