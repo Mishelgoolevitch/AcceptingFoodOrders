@@ -139,6 +139,11 @@
                         </a>
                     }
                 </div>
+                <div class="col-md-6 text-end">
+                                        <a href="/Admin/AddFoodItem" class="btn btn-success">
+                                            <i class="bi bi-plus-circle"></i> Добавить новый товар
+                                        </a>
+                                    </div>
             </div>
         </div>
     </div>
@@ -226,6 +231,8 @@
                                     }
                                 </td>
                                 <td>
+                                    <div class="btn-group" role="group">
+                                    
                                     <!-- Переключить форму доступности -->
                                     <form asp-action="ToggleAvailability" method="post" class="d-inline"
                                           title="@(item.IsAvailable ? "Сделать недоступным" : "Сделать доступным")">
@@ -239,6 +246,7 @@
                                     <button type="button" class="btn btn-sm btn-danger">
                                         <i class="bi bi-trash"></i>
                                     </button>
+                                    </div>
                                 </td>
                             </tr>
                         }

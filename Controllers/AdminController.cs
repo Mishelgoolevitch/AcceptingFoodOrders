@@ -118,5 +118,24 @@ namespace AcceptingFoodOrders.Controllers
 
             return RedirectToAction("ManageMenu");
         }
+
+        [HttpGet]
+        public IActionResult AddFoodItem()
+        {
+            if (!IsAdmin()) return RedirectToAction("Index", "Home");
+
+            ViewBag.Categories = _context.Categories.ToList();
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult AddFoodItem(FoodItem item)
+        {
+            if (!IsAdmin()) return RedirectToAction("Index", "Home");
+
+            _context.FoodItems.Add(item);
+            _context.SaveChanges();
+            return RedirectToAction("ManageMenu");
+        }
     }
 }
