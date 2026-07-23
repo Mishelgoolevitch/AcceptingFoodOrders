@@ -1,0 +1,243 @@
+﻿@model List<Order>
+@{
+    ViewData["Title"] = "Все заказы";
+}
+
+<div class="container-fluid my-4">
+    <h2 class="mb-4"><i class="bi bi-list-check"></i> Управление заказами</h2>
+
+    <!-- Карточки статистики -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body d-flex justify-content-between">
+                    <div>
+                        <h6>Отложенные ордера</h6>
+                        <h3>@ViewBag.PendingCount</h3>
+                    </div>
+                    <i class="bi bi-clock display-4"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body d-flex justify-content-between">
+                    <div>
+                        <h6>Подтвержден</h6>
+                        <h3>@ViewBag.ConfirmedCount</h3>
+                    </div>
+                    <i class="bi bi-check-circle display-4"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body d-flex justify-content-between">
+                    <div>
+                        <h6>Сегодняшние заказы</h6>
+                        <h3>@ViewBag.TodayCount</h3>
+                    </div>
+                    <i class="bi bi-calendar-check display-4"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body d-flex justify-content-between">
+                    <div>
+                        <h6>Общий доход</h6>
+                        <h3>$@ViewBag.TotalRevenue.ToString("F0")</h3>
+                    </div>
+                    <i class="bi bi-cash-stack display-4"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Секция фильтра -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> Фильтровать заказы</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" asp-action="Orders" class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label">Статус</label>
+                    <select name="status" class="form-select">
+                        <option value="All">Весь статус</option>
+                        @foreach (var s in ViewBag.StatusList)
+                        {
+                            if (s != "All")
+                            {
+                                <option value="@s" selected="@(ViewBag.CurrentStatus == s)">@s</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Поиск Пользователя</label>
+                    <input type="text" name="searchString" class="form-control"
+                           value="@ViewBag.CurrentSearch" placeholder="Name, Username or Email..." />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Начиная с Даты</label>
+                    <input type="date" name="fromDate" class="form-control" value="@ViewBag.FromDate" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Датировать</label>
+                    <input type="date" name="toDate" class="form-control" value="@ViewBag.ToDate" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Сортировать по</label>
+                    <select name="sortOrder" class="form-select">
+                        <option value="">Самый новый Первый</option>
+                        <option value="date_asc" selected="@(ViewBag.CurrentSort == "date_asc")">Самый старый Первый</option>
+                        <option value="total_desc" selected="@(ViewBag.CurrentSort == "total_desc")">Самая высокая сумма</option>
+                        <option value="total_asc" selected="@(ViewBag.CurrentSort == "total_asc")">Самая низкая сумма</option>
+                        <option value="status" selected="@(ViewBag.CurrentSort == "status")">Статус (A-Я)</option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+
+            @if (!string.IsNullOrEmpty(ViewBag.CurrentStatus) ||
+                        !string.IsNullOrEmpty(ViewBag.CurrentSearch) ||
+                        ViewBag.FromDate != null ||
+                        ViewBag.ToDate != null)
+            {
+                <div class="mt-3">
+                    <span class="text-muted">Активные фильтры:</span>
+                    @if (!string.IsNullOrEmpty(ViewBag.CurrentStatus))
+                    {
+                        <span class="badge bg-primary me-1">Статус: @ViewBag.CurrentStatus</span>
+                    }
+                    @if (!string.IsNullOrEmpty(ViewBag.CurrentSearch))
+                    {
+                        <span class="badge bg-secondary me-1">Поиск: @ViewBag.CurrentSearch</span>
+                    }
+                    @if (ViewBag.FromDate != null)
+                    {
+                        <span class="badge bg-info me-1">От: @ViewBag.FromDate</span>
+                    }
+                    @if (ViewBag.ToDate != null)
+                    {
+                        <span class="badge bg-info me-1">К: @ViewBag.ToDate</span>
+                    }
+                    <a href="/Admin/Orders" class="btn btn-sm btn-outline-danger ms-2">
+                        <i class="bi bi-x-circle"></i> Очистить Все
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Таблица заказов -->
+    <div class="card shadow">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Отображение @Model.Count Заказов</span>
+            <div>
+                <a href="#" class="btn btn-sm btn-success" onclick="window.print()">
+                    <i class="bi bi-printer"></i> Печать
+                </a>
+                <a href="#" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-download"></i> Ехпорт
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Заказ ID</th>
+                            <th>
+                                <a href="@Url.Action("Orders", new { sortOrder = ViewBag.DateSortParam, status = ViewBag.CurrentStatus, searchString = ViewBag.CurrentSearch, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate })" class="text-white text-decoration-none">
+                                    Дата <i class="bi bi-arrow-down-up"></i>
+                                </a>
+                            </th>
+                            <th>Пользователь</th>
+                            <th>Контакт</th>
+                            <th>
+                                <a href="@Url.Action("Orders", new { sortOrder = ViewBag.TotalSortParam, status = ViewBag.CurrentStatus, searchString = ViewBag.CurrentSearch, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate })" class="text-white text-decoration-none">
+                                    Общий <i class="bi bi-arrow-down-up"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a href="@Url.Action("Orders", new { sortOrder = ViewBag.StatusSortParam, status = ViewBag.CurrentStatus, searchString = ViewBag.CurrentSearch, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate })" class="text-white text-decoration-none">
+                                    Статус <i class="bi bi-arrow-down-up"></i>
+                                </a>
+                            </th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model)
+                        {
+                            <tr>
+                                <td><strong>#@order.Id</strong></td>
+                                <td>@order.OrderDate.ToString("MM/dd/yyyy HH:mm")</td>
+                                <td>
+                                    <div>@order.User?.FullName</div>
+                                    <small class="text-muted">@order.User?.Username</small>
+                                </td>
+                                <td>@order.PhoneNumber</td>
+                                <td class="fw-bold">$@order.TotalAmount.ToString("F2")</td>
+                                <td>
+                                    @{
+                                        var badgeClass = order.Status switch
+                                        {
+                                            "Pending" => "bg-warning text-dark",
+                                            "Confirmed" => "bg-info",
+                                            "Preparing" => "bg-primary",
+                                            "OutForDelivery" => "bg-secondary",
+                                            "Delivered" => "bg-success",
+                                            "Cancelled" => "bg-danger",
+                                            _ => "bg-light text-dark"
+                                        };
+                                    }
+                                    <span class="badge @badgeClass">@order.Status</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="#" class="btn btn-sm btn-outline-info" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-search display-4"></i>
+                    <p class="mt-3">Не найдено заказов, соответствующих вашим критериям.</p>
+                    <a href="/Admin/Orders" class="btn btn-outline-primary">Очистить фильтры</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

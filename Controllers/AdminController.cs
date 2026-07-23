@@ -137,5 +137,111 @@ namespace AcceptingFoodOrders.Controllers
             _context.SaveChanges();
             return RedirectToAction("ManageMenu");
         }
+
+        [HttpGet]
+        public IActionResult EditFoodItem(int id)
+        {
+            if (!IsAdmin()) return RedirectToAction("Index", "Home");
+
+            var item = _context.FoodItems.Find(id);
+            if (item == null) return NotFound();
+
+            ViewBag.Categories = _context.Categories.ToList();
+            return View(item);
+        }
+
+        [HttpPost]
+        public IActionResult EditFoodItem([Bind("Id,Name,Description,Price,CategoryId,ImageUrl,IsAvailable")] FoodItem item)
+        {
+            if (!IsAdmin()) return RedirectToAction("Index", "Home");
+
+          
+                var existingItem = _context.FoodItems.Find(item.Id);
+                if (existingItem == null) return NotFound();
+
+                // Обновляйте только те поля, которые нам нужны
+                existingItem.Name = item.Name;
+                existingItem.Description = item.Description;
+                existingItem.Price = item.Price;
+                existingItem.CategoryId = item.CategoryId;
+                existingItem.ImageUrl = item.ImageUrl;
+                existingItem.IsAvailable = item.IsAvailable;
+
+                _context.SaveChanges();
+                TempData["Success"] = $"{item.Name} был успешно обновлен!";
+                return RedirectToAction("ManageMenu");
+            
+
+            ViewBag.Categories = _context.Categories.ToList();
+            return View(item);
+        }
+
+        public IActionResult Orders(string status, string searchString, DateTime? fromDate, DateTime? toDate, string sortOrder)
+        {
+            if (!IsAdmin()) return RedirectToAction("Index", "Home");
+
+            // Сохранять текущий порядок сортировки для просмотра
+            ViewBag.CurrentSort = sortOrder;
+            ViewBag.DateSortParam = sortOrder == "date_asc" ? "date_desc" : "date_asc";
+            ViewBag.TotalSortParam = sortOrder == "total_asc" ? "total_desc" : "total_asc";
+            ViewBag.StatusSortParam = sortOrder == "status" ? "status_desc" : "status";
+
+            var orders = _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.FoodItem)
+                .AsQueryable();
+
+            // Фильтровать по статусу
+            if (!string.IsNullOrEmpty(status) && status != "All")
+            {
+                orders = orders.Where(o => o.Status == status);
+                ViewBag.CurrentStatus = status;
+            }
+
+            // Фильтровать по имени клиента
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                orders = orders.Where(o =>
+                    o.User.FullName.Contains(searchString) ||
+                    o.User.Username.Contains(searchString) ||
+                    o.User.Email.Contains(searchString));
+                ViewBag.CurrentSearch = searchString;
+            }
+
+            // Фильтровать по диапазону дат
+            if (fromDate.HasValue)
+            {
+                orders = orders.Where(o => o.OrderDate >= fromDate.Value);
+                ViewBag.FromDate = fromDate.Value.ToString("yyyy-MM-dd");
+            }
+            if (toDate.HasValue)
+            {
+                orders = orders.Where(o => o.OrderDate <= toDate.Value.AddDays(1));
+                ViewBag.ToDate = toDate.Value.ToString("yyyy-MM-dd");
+            }
+
+            // Сортировка
+            orders = sortOrder switch
+            {
+                "date_asc" => orders.OrderBy(o => o.OrderDate),
+                "date_desc" => orders.OrderByDescending(o => o.OrderDate),
+                "total_asc" => orders.OrderBy(o => o.TotalAmount),
+                "total_desc" => orders.OrderByDescending(o => o.TotalAmount),
+                "status" => orders.OrderBy(o => o.Status),
+                "status_desc" => orders.OrderByDescending(o => o.Status),
+                _ => orders.OrderByDescending(o => o.OrderDate) 
+            };
+
+            // Статус учитывается в статистике панели мониторинга
+            ViewBag.PendingCount = _context.Orders.Count(o => o.Status == "Pending");
+            ViewBag.ConfirmedCount = _context.Orders.Count(o => o.Status == "Confirmed");
+            ViewBag.TodayCount = _context.Orders.Count(o => o.OrderDate.Date == DateTime.Today);
+            ViewBag.TotalRevenue = _context.Orders.Where(o => o.Status != "Cancelled").Sum(o => (decimal?)o.TotalAmount) ?? 0;
+
+            ViewBag.StatusList = new List<string> { "Все", "Ожидаемый", "Подтвержденный", "Подготовка", "Срочная доставка", "Доставлен", "Отмененный" };
+
+            return View(orders.ToList());
+        }
     }
 }
