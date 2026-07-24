@@ -1,0 +1,105 @@
+﻿@model Order
+@{
+    ViewData["Title"] = $"Order #{Model.Id} Details";
+}
+
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-receipt"></i> Заказ #@Model.Id Details</h2>
+        <a href="/Admin/Orders" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Вернемся к Заказам</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Заказывайте Товары</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Продукт</th>
+                                <th>Количество</th>
+                                <th>Цена за Единицу</th>
+                                <th>Общая</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.OrderItems)
+                            {
+                                <tr>
+                                    <td>@item.FoodItem?.Name</td>
+                                    <td>@item.Quantity</td>
+                                    <td>$@item.UnitPrice.ToString("F2")</td>
+                                    <td>$@((item.Quantity * item.UnitPrice).ToString("F2"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-primary">
+                                <td colspan="3" class="text-end"><strong>Общая Сумма:</strong></td>
+                                <td><strong>$@Model.TotalAmount.ToString("F2")</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Обновить Статус</h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group w-100" role="group">
+                        <!-- Кнопки обновления статуса находятся здесь -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Информация о Клиенте</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Name:</strong> @Model.User?.FullName</p>
+                    <p><strong>Email:</strong> @Model.User?.Email</p>
+                    <p><strong>Phone:</strong> @Model.PhoneNumber</p>
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Адрес Доставки</h5>
+                </div>
+                <div class="card-body">
+                    <p>@Model.DeliveryAddress</p>
+                </div>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Статус Заказа</h5>
+                </div>
+                <div class="card-body text-center">
+                    @{
+                        var statusColor = Model.Status switch
+                        {
+                            "Pending" => "warning",
+                            "Confirmed" => "info",
+                            "Preparing" => "primary",
+                            "OutForDelivery" => "secondary",
+                            "Delivered" => "success",
+                            "Cancelled" => "danger",
+                            _ => "light"
+                        };
+                    }
+                    <h3 class="text-@statusColor">@Model.Status</h3>
+                    <p class="text-muted mb-0">Дата Заказа: @Model.OrderDate.ToString("MMM dd, yyyy HH:mm")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

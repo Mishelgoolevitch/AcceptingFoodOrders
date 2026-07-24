@@ -243,5 +243,20 @@ namespace AcceptingFoodOrders.Controllers
 
             return View(orders.ToList());
         }
+
+        public IActionResult OrderDetails(int id)
+        {
+            if (!IsAdmin()) return RedirectToAction("Index", "Home");
+
+            var order = _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.FoodItem)
+                .FirstOrDefault(o => o.Id == id);
+
+            if (order == null) return NotFound();
+
+            return View(order);
+        }
     }
 }
